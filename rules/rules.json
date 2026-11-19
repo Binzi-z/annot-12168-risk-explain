@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "rules": [
+    {
+      "id": "burst_small_pay",
+      "version": 1,
+      "enabled": true,
+      "description": "滑动窗口内，账号在其从未出现过的 IP 地区发生高频小额支付：窗口时长 window_seconds 秒内 pay 事件数达到 min_events 条，且这些事件来自该账号历史上未见过的地区。",
+      "params": {
+        "action": "pay",
+        "window_seconds": 60,
+        "min_events": 12,
+        "window_bounds": "span_lt_window_seconds",
+        "unseen_region_scope": "account_history"
+      },
+      "aggregation": {
+        "field": null,
+        "function": "count"
+      },
+      "threshold": {
+        "metric": "event_count",
+        "operator": ">=",
+        "value": 12
+      }
+    },
+    {
+      "id": "new_device_big_withdraw",
+      "version": 1,
+      "enabled": true,
+      "description": "账号在新设备登录（该设备首次出现在账号历史中）后，在 link_max_gap_seconds 秒内于同一设备发生金额不低于 withdraw_min_amount 的 withdraw 事件。",
+      "params": {
+        "login_action": "login",
+        "money_action": "withdraw",
+        "withdraw_min_amount": 10000.0,
+        "link_max_gap_seconds": 1800,
+        "new_device_scope": "account_history",
+        "require_same_device": true
+      },
+      "aggregation": {
+        "field": "amount",
+        "function": "max"
+      },
+      "threshold": {
+        "metric": "withdraw_amount",
+        "operator": ">=",
+        "value": 10000.0
+      }
+    }
+  ]
+}
